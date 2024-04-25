@@ -1,7 +1,9 @@
 """ Module for SOME/IP Packet. Includes classes and functions that manage operating with SOME/IP Packets. """
 
 import logging
-logging.getLogger("scapy").setLevel(1)
+import random
+
+logging.getLogger("scapy").setLevel(logging.DEBUG)
 
 from scapy.all import *
 
@@ -60,12 +62,105 @@ class SomeIP(Packet):
 		            StrLenField("Payload", "", length_from=lambda pkt:pkt.Length)]
 
 
-def createPayload():
-    """ Creat arbitrary payload ranging from 0 to 20 Byte. """
-    alpha = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F")
-    length = random.randint(0,20)
-    payload = ''.join([random.choice(alpha) for _ in range(length)])
-    return payload
+def createPayload(methodID, msg_type):
+    """ Based on the methodID value, craft a payload that can be parsed. """
+    str_choices = ("Hello", "World", "xyz", "abc", "foo", "bar")
+    utf8_bom = b'\xef\xbb\xbf'
+    if methodID == 31000:
+        data = random.randint(0, 255).to_bytes(1, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31001:
+        data = random.randint(0, 65535).to_bytes(2, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31002 or methodID == 31008:
+        data = random.randint(0, 4294967295).to_bytes(4, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31003:
+        data = random.randint(0, 18446744073709551615).to_bytes(8, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31004:
+        data = random.randint(0, 127).to_bytes(1, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31005:
+        data = random.randint(0, 32767).to_bytes(2, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31006:
+        data = random.randint(0, 2147483647).to_bytes(4, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31007:
+        data = random.randint(0, 9223372036854775807).to_bytes(8, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31009:
+        data = random.randint(0, 1).to_bytes(1, byteorder='little')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31010:
+        data = struct.pack("f", random.random())
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31011:
+        data = struct.pack("d", random.random())
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31012:  # getString
+        str_to_send = random.choice(str_choices)
+        b1 = (len(str_to_send) + len(utf8_bom)).to_bytes(4, byteorder='big')
+        data = b1 + utf8_bom + str_to_send.encode('utf-8')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31013:  # getManyString
+        if msg_type == messageTypes["REQUEST"]:
+            data = random.randint(0, 4294967295).to_bytes(4, byteorder='little')
+        else:
+            str_to_send1 = random.choice(str_choices)
+            str_to_send2 = random.choice(str_choices)
+            str_to_send3 = random.choice(str_choices)
+            str_to_send4 = random.choice(str_choices)
+            l1 = (len(str_to_send1) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            l2 = (len(str_to_send2) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            l3 = (len(str_to_send3) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            l4 = (len(str_to_send4) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            data = (l1 + utf8_bom + str_to_send1.encode('utf-8') + l2 + utf8_bom + str_to_send2.encode('utf-8') +
+                    l3 + utf8_bom + str_to_send3.encode('utf-8') + l4 + utf8_bom + str_to_send4.encode('utf-8'))
+            print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31014:  # getMixed
+        if msg_type == messageTypes["REQUEST"]:
+            b1 = struct.pack("f", random.random())
+            b2 = struct.pack("d", random.random())
+            b3 = random.randint(0, 1).to_bytes(1, byteorder='little')
+            data = b1 + b2 + b3
+            print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+        else:
+            b1 = random.randint(0, 65535).to_bytes(2, byteorder='little')
+            b2 = random.randint(0, 9223372036854775807).to_bytes(8, byteorder='little')
+            str_to_send1 = random.choice(str_choices)
+            str_to_send2 = random.choice(str_choices)
+            l1 = (len(str_to_send1) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            l2 = (len(str_to_send2) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            data = b1 + b2 + l1 + utf8_bom + str_to_send1.encode('utf-8') + l2 + utf8_bom + str_to_send2.encode('utf-8')
+            print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31015:  # setManyString
+            str_to_send1 = random.choice(str_choices)
+            str_to_send2 = random.choice(str_choices)
+            str_to_send3 = random.choice(str_choices)
+            l1 = (len(str_to_send1) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            l2 = (len(str_to_send2) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            l3 = (len(str_to_send3) + len(utf8_bom)).to_bytes(4, byteorder='big')
+            data = (l1 + utf8_bom + str_to_send1.encode('utf-8') + l2 + utf8_bom + str_to_send2.encode('utf-8') +
+                    l3 + utf8_bom + str_to_send3.encode('utf-8'))
+            print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    elif methodID == 31016:  # setMixed
+            str_to_send = random.choice(str_choices)
+            b2 = struct.pack("f", random.random())
+            b3 = random.randint(0, 1).to_bytes(1, byteorder='little')
+            b4 = random.randint(0, 65535).to_bytes(2, byteorder='little')
+            data = ((len(str_to_send) + len(utf8_bom)).to_bytes(4, byteorder='big') + utf8_bom +
+                    str_to_send.encode('utf-8') + b2 + b3 + b4)
+            print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+    else:
+        alpha = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F")
+        length = random.randint(0,20)
+        data = ''.join([random.choice(alpha) for _ in range(length)]).encode('utf-8')
+        print(f"Payload: {data.hex()} for method {methodID}, message type: {msg_type}")
+
+    # payload = data.hex()
+    return data
 
 
 def createSomeIP(SenderConfig, ReceiverConfig, MsgConfig):
@@ -87,13 +182,15 @@ def createSomeIP(SenderConfig, ReceiverConfig, MsgConfig):
     srcPort = SenderConfig['port']
     dstPort = ReceiverConfig['port']
 
-    pl = createPayload()
+
+    method = MsgConfig['method']
+    msgtype = MsgConfig['type']
+
+    pl = createPayload(method, msgtype)
 
     service = MsgConfig['service']
-    method = MsgConfig['method']
     client = MsgConfig['client'] 
-    session = MsgConfig['session'] 
-    msgtype = MsgConfig['type']
+    session = MsgConfig['session']
     ret = MsgConfig['ret']
     proto = MsgConfig['proto']
     iface = MsgConfig['iface']

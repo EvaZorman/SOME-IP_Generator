@@ -215,7 +215,7 @@ def attacker (a):
         if (msg.receiver in a.attackers) or (msg.sender in a.attackers):
             continue
 
-        if len(attacksConfigured) != 0:
+        if len(attacksConfigured) != 0 and a.counter != 0:
             if not attackOngoing:
 
                 attack = random.randint(1,a.counter)

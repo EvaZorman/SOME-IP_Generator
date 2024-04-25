@@ -12,7 +12,7 @@ import configparser
 import sys
 
 import logging
-logging.getLogger("scapy").setLevel(1)
+logging.getLogger("scapy").setLevel(logging.DEBUG)
 
 from scapy.all import *
 
