@@ -72,16 +72,20 @@ def writerWorker(q, serverCount, attackerList, attackerQueue, ServerDeviceConfig
             receiver['port'] = deviceConfig[msg.receiver]['recPort']
             message = msg.message
             timestamp = msg.timestamp
-            packet = SomeIPPacket.createSomeIP(sender, receiver, message)
-            packet.time = timestamp
+
+            if 'malicious' in message:
+                p = SomeIPPacket.createMalformedSomeIp(sender, receiver, message)
+            else:
+                p = SomeIPPacket.createSomeIP(sender, receiver, message)
+            p.time = timestamp
 
             counter = counter + 1
 
             if pcap != None:
-                wrpcap(pcap, packet, append=True)
+                wrpcap(pcap, p, append=True)
 
             if interface != None:
-                sck.send(packet)
+                sck.send(p)
             
 
     print ('Writer Stoped By Attacker')
