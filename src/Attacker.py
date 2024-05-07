@@ -200,6 +200,7 @@ def attacker (a):
     dropMsg = False
 
     attacksSuc = 0
+    attacksAll = 0
 
     while (True):
 
@@ -226,13 +227,15 @@ def attacker (a):
                         print ('Do Attack now!')
                         
                     curAttack = random.choice(attacksConfigured)
-                    attackResult = doAttack(curAttack, msg, a, attacksSuc) 
+                    attackResult = doAttack(curAttack, msg, a, attacksSuc)
+                    attacksAll += 1
                     attackOngoing = attackResult[0]
                     dropMsg = attackResult[1]
                     attacksSuc = attackResult[2]
 
             else:           
-                attackResult = doAttack(curAttack, msg, a, attacksSuc) 
+                attackResult = doAttack(curAttack, msg, a, attacksSuc)
+                attacksAll += 1
                 attackOngoing = attackResult[0]
                 dropMsg = attackResult[1]
                 attacksSuc = attackResult[2]
@@ -241,6 +244,7 @@ def attacker (a):
             forward(a, msg)
             a.writerQueue.put(msg)
 
+    print(a.name, ' - BREAK - with ', attacksAll, ' all tried attacks')
     print (a.name, ' - BREAK - with ', attacksSuc, ' successful attacks')
     a.writerQueue.put('Done')
 		

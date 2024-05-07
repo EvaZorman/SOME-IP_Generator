@@ -255,7 +255,7 @@ def client(c):
                 # putting everything together
                 message = {}
                 # set service/ method/ clientID
-                message['service'] = serviceIdUsed       
+                message['service'] = serviceIdUsed
                 message['method'] = methodIdUsed
                 message['client'] = c.clientID                
                 # set session ID

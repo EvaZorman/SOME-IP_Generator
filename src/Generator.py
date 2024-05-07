@@ -47,6 +47,7 @@ def writerWorker(q, serverCount, attackerList, attackerQueue, ServerDeviceConfig
         deviceConfig[key] = value
 
     counter = 0
+    mal_counter = 0
 
     start_time = time.time()
 
@@ -75,6 +76,7 @@ def writerWorker(q, serverCount, attackerList, attackerQueue, ServerDeviceConfig
 
             if 'malicious' in message:
                 p = SomeIPPacket.createMalformedSomeIp(sender, receiver, message)
+                mal_counter += 1
             else:
                 p = SomeIPPacket.createSomeIP(sender, receiver, message)
             p.time = timestamp
@@ -93,6 +95,7 @@ def writerWorker(q, serverCount, attackerList, attackerQueue, ServerDeviceConfig
     stop_time = time.time()
 
     print ('Number of Packets generated: ', counter)
+    print('Number of Malformed Packets generated: ', mal_counter)
 
     print ('Time to generate Packets:', stop_time - start_time)
 
